@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe Kimia</title>
+    <!-- Memuat Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Memuat Tone.js untuk suara -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    
+    <style>
+        /* Sembunyikan modal secara default */
+        .hidden {
+            display: none;
+        }
+        /* Styling dasar untuk sel di papan */
+        .game-cell {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid #9ca3af; /* gray-400 */
+        }
+        /* Ukuran papan responsif */
+        @media (max-width: 640px) {
+            .game-cell {
+                width: 80px;
+                height: 80px;
+                font-size: 2.5rem;
+            }
+        }
+        /* Warna pemain */
+        .player-X {
+            color: #3b82f6; /* blue-500 */
+        }
+        .player-O {
+            color: #ec4899; /* pink-500 */
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans flex items-center justify-center min-h-screen">
+
+    <div class="container mx-auto p-4 max-w-2xl bg-white rounded-lg shadow-xl">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-4">
+            🧪 Tic-Tac-Toe Kimia 🧪
+        </h1>
+        <!-- Teks baru ditambahkan di sini -->
+        <p class="text-xl font-semibold text-center text-indigo-700 mb-4">
+            Selamat datang di pembelajaran kimia XII Sainkes 1 dan 2
+        </p>
+        <p class="text-center text-gray-600 mb-6">
+            Pilih kategori dan ukuran papan, lalu jawab soal untuk menempatkan bidakmu!
+        </p>
+
+        <!-- Input Nama Pemain (BARU) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            <div>
+                <label for="player-x-name" class="block text-sm font-medium text-gray-700">Nama Pemain X:</label>
+                <input type="text" id="player-x-name" placeholder="Pemain X" class="mt-1 block w-full px-3 py-2 text-base border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md shadow-sm">
+            </div>
+            <div>
+                <label for="player-o-name" class="block text-sm font-medium text-gray-700">Nama Pemain O:</label>
+                <input type="text" id="player-o-name" placeholder="Pemain O" class="mt-1 block w-full px-3 py-2 text-base border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md shadow-sm">
+            </div>
+        </div>
+
+        <!-- Kontrol Permainan -->
+        <div class="flex flex-col sm:flex-row justify-center items-center gap-4 mb-6">
+            <div>
+                <label for="category-select" class="block text-sm font-medium text-gray-700">Kategori Soal:</label>
+                <select id="category-select" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                    <option value="penyangga">Larutan Penyangga</option>
+                    <option value="hidrolisis">Hidrolisis Garam</option>
+                </select>
+            </div>
+            <div>
+                <label for="size-select" class="block text-sm font-medium text-gray-700">Ukuran Papan:</label>
+                <select id="size-select" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                    <option value="3">3 x 3</option>
+                    <option value="4">4 x 4</option>
+                    <option value="5">5 x 5</option>
+                </select>
+            </div>
+            <button id="start-game" class="w-full sm:w-auto mt-4 sm:mt-0 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-md shadow-lg transition duration-300">
+                Mulai
+            </button>
+        </div>
+
+        <!-- Info Permainan -->
+        <div class="flex justify-between items-center mb-4 px-2">
+            <div id="turn-indicator" class="text-xl font-semibold text-gray-700">Giliran: Pemain X</div>
+            <div class="text-lg">
+                <span class="font-semibold player-X">X: <span id="score-X">0</span> Poin</span> |
+                <span class="font-semibold player-O">O: <span id="score-O">0</span> Poin</span>
+            </div>
+        </div>
+
+        <!-- Papan Permainan -->
+        <div id="game-board" class_="grid gap-2 bg-gray-200 p-2 rounded-lg" style="margin: 0 auto; display: grid;">
+            <!-- Sel-sel akan digenerasi oleh JavaScript -->
+        </div>
+    </div>
+
+    <!-- Modal Pertanyaan -->
+    <div id="question-modal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-2xl p-6 w-full max-w-lg transform transition-all scale-95 opacity-0">
+            <h3 class="text-xl font-semibold mb-2 text-gray-800">Soal (Poin: <span id="question-points">10</span>)</h3>
+            <p id="question-text" class="text-gray-700 mb-4">Ini adalah teks pertanyaan...</p>
+            <div id="answer-options" class="flex flex-col gap-3">
+                <!-- Opsi jawaban akan digenerasi oleh JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Hasil Jawaban (Benar/Salah) -->
+    <div id="result-modal" class="hidden fixed inset-0 bg-black bg-opacity-20 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-2xl p-8 w-full max-w-md text-center transform transition-all scale-95 opacity-0">
+            <span id="result-emoji" class="text-6xl mb-4 block"></span>
+            <p id="result-message" class="text-2xl font-bold"></p>
+            <p id="result-explanation" class="text-base text-gray-700 mt-4 text-center"></p>
+            <button id="continue-button" class="mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-md shadow-lg transition duration-300">
+                Lanjut
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal Game Over -->
+    <div id="game-over-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-2xl p-8 w-full max-w-md text-center transform transition-all scale-95 opacity-0">
+            <h2 id="game-over-message" class="text-3xl font-bold mb-6">Pemenangnya adalah X!</h2>
+            <button id="restart-game" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-md shadow-lg transition duration-300 text-lg">
+                Main Lagi
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- Database Soal ---
+        const questions = {
+            penyangga: [
+                { q: "Larutan yang dapat mempertahankan pH disebut...", options: ["Larutan penyangga", "Larutan hidrolisis", "Larutan netral", "Larutan jenuh"], answer: "Larutan penyangga", difficulty: "easy", points: 10, explanation: "Larutan penyangga (atau buffer) adalah larutan yang dirancang untuk menahan perubahan pH ketika sedikit asam atau basa ditambahkan." },
+                { q: "Campuran manakah di bawah ini yang membentuk larutan penyangga asam?", options: ["CH₃COOH dan CH₃COONa", "HCl dan NaCl", "NH₃ dan NH₄Cl", "NaOH dan NaCl"], answer: "CH₃COOH dan CH₃COONa", difficulty: "easy", points: 10, explanation: "Penyangga asam terdiri dari Asam Lemah (CH₃COOH) dan Basa Konjugasinya (CH₃COO⁻, yang disediakan oleh garam CH₃COONa)." },
+                { q: "Sistem penyangga utama dalam darah adalah...", options: ["H₂CO₃ / HCO₃⁻", "CH₃COOH / CH₃COO⁻", "NH₃ / NH₄⁺", "HCl / Cl⁻"], answer: "H₂CO₃ / HCO₃⁻", difficulty: "medium", points: 20, explanation: "Darah manusia mempertahankan pH-nya sekitar 7.4 menggunakan sistem penyangga karbonat (H₂CO₃ / HCO₃⁻) dan fosfat." },
+                { q: "Jika ke dalam larutan penyangga CH₃COOH/CH₃COO⁻ ditambahkan sedikit HCl (H⁺), spesi apa yang akan bereaksi dengan H⁺?", options: ["CH₃COO⁻", "CH₃COOH", "Na⁺", "H₂O"], answer: "CH₃COO⁻", difficulty: "medium", points: 20, explanation: "Asam (H⁺) yang ditambahkan akan bereaksi dengan komponen Basa Konjugasi (CH₃COO⁻) untuk membentuk Asam Lemah (CH₃COOH)." },
+                { q: "Hitung pH larutan yang mengandung 0.1 mol CH₃COOH (Ka=10⁻⁵) dan 0.1 mol CH₃COONa.", options: ["5", "4", "6", "7"], answer: "5", difficulty: "hard", points: 30, explanation: "Gunakan rumus [H⁺] = Ka * (mol Asam / mol Basa Konj.). [H⁺] = 10⁻⁵ * (0.1 / 0.1) = 10⁻⁵. Maka, pH = 5." },
+                { q: "Campuran 100 mL NH₃ 0.2 M (Kb=10⁻⁵) dan 100 mL NH₄Cl 0.2 M akan memiliki pOH sebesar...", options: ["5", "9", "4", "10"], answer: "5", difficulty: "hard", points: 30, explanation: "Ini adalah penyangga basa. [OH⁻] = Kb * (mol Basa / mol Asam Konj.). [OH⁻] = 10⁻⁵ * (20 mmol / 20 mmol) = 10⁻⁵. Maka, pOH = 5." },
+                { q: "Komponen penyangga basa terdiri dari...", options: ["Basa Lemah dan Asam Konjugasinya", "Asam Lemah dan Basa Konjugasinya", "Asam Kuat dan Basa Kuat", "Basa Lemah dan Asam Lemah"], answer: "Basa Lemah dan Asam Konjugasinya", difficulty: "easy", points: 10, explanation: "Penyangga basa (seperti NH₃) bekerja dengan pasangan Asam Konjugasinya (NH₄⁺, dari garam NH₄Cl)." },
+                { q: "Jika 50 mL NaOH 0.1 M (5 mmol) dicampur dengan 100 mL CH₃COOH 0.1 M (10 mmol) (Ka=10⁻⁵), pH larutan adalah...", options: ["5", "7", "9", "1"], answer: "5", difficulty: "hard", points: 30, explanation: "Reaksi: NaOH + CH₃COOH → CH₃COONa + H₂O. NaOH habis bereaksi (pereaksi pembatas), bersisa 5 mmol CH₃COOH (Asam Lemah) dan terbentuk 5 mmol CH₃COONa (Basa Konj.). Ini adalah buffer asam. pH = pKa = 5." },
+            ],
+            hidrolisis: [
+                { q: "Reaksi ion garam dengan air disebut...", options: ["Hidrolisis", "Netralisasi", "Buffer", "Elektrolisis"], answer: "Hidrolisis", difficulty: "easy", points: 10, explanation: "Hidrolisis (hidro = air, lisis = peruraian) adalah reaksi peruraian suatu zat (dalam hal ini ion garam) oleh air." },
+                { q: "Garam manakah yang tidak mengalami hidrolisis?", options: ["NaCl", "NH₄Cl", "KCN", "CH₃COONH₄"], answer: "NaCl", difficulty: "easy", points: 10, explanation: "NaCl berasal dari Asam Kuat (HCl) dan Basa Kuat (NaOH). Ion-ionnya (Na⁺ dan Cl⁻) tidak bereaksi dengan air, sehingga larutan bersifat netral." },
+                { q: "Garam KCN (tersusun dari KOH dan HCN) akan bersifat...", options: ["Basa", "Asam", "Netral", "Amfoter"], answer: "Basa", difficulty: "medium", points: 20, explanation: "KCN berasal dari Basa Kuat (KOH) dan Asam Lemah (HCN). Ion CN⁻ dari Asam Lemah akan terhidrolisis menghasilkan OH⁻, sehingga larutan bersifat Basa." },
+                { q: "Garam NH₄Cl dilarutkan dalam air akan memiliki pH...", options: ["< 7 (Asam)", "> 7 (Basa)", "= 7 (Netral)", "Tergantung konsentrasi"], answer: "< 7 (Asam)", difficulty: "medium", points: 20, explanation: "NH₄Cl berasal dari Basa Lemah (NH₃) dan Asam Kuat (HCl). Ion NH₄⁺ dari Basa Lemah akan terhidrolisis menghasilkan H₃O⁺ (H⁺), sehingga larutan bersifat Asam." },
+                { q: "Ion manakah dari garam CH₃COONa yang mengalami hidrolisis?", options: ["CH₃COO⁻", "Na⁺", "Keduanya", "Tidak ada"], answer: "CH₃COO⁻", difficulty: "medium", points: 20, explanation: "Hanya ion yang berasal dari komponen lemah yang terhidrolisis. CH₃COO⁻ berasal dari Asam Lemah (CH₃COOH), sedangkan Na⁺ berasal dari Basa Kuat (NaOH)." },
+                { q: "Garam yang mengalami hidrolisis total adalah garam yang berasal dari...", options: ["Asam Lemah dan Basa Lemah", "Asam Kuat dan Basa Kuat", "Asam Kuat dan Basa Lemah", "Asam Lemah dan Basa Kuat"], answer: "Asam Lemah dan Basa Lemah", difficulty: "easy", points: 10, explanation: "Hidrolisis total terjadi ketika kedua ion (kation dan anion) bereaksi dengan air, yang hanya terjadi jika garam terbentuk dari Asam Lemah dan Basa Lemah." },
+                { q: "Jika Ka HCN = 10⁻¹⁰, hitung pH larutan KCN 0.1 M.", options: ["11", "3", "7", "10"], answer: "11", difficulty: "hard", points: 30, explanation: "Ini garam basa. [OH⁻] = √( (Kw/Ka) * [Anion] ) = √( (10⁻¹⁴/10⁻¹⁰) * 0.1 ) = √(10⁻⁵) = 10⁻²·⁵. pOH = 2.5. Maka, pH = 14 - 2.5 = 11.5 (Pilihan '11' adalah yang terdekat)." },
+                { q: "Jika Kb NH₃ = 10⁻⁵, hitung pH larutan NH₄Cl 0.01 M.", options: ["5.5", "8.5", "7", "5"], answer: "5.5", difficulty: "hard", points: 30, explanation: "Ini garam asam. [H⁺] = √( (Kw/Kb) * [Kation] ) = √( (10⁻¹⁴/10⁻⁵) * 0.01 ) = √(10⁻⁹ * 10⁻²) = √(10⁻¹¹) = 10⁻⁵·⁵. Maka, pH = 5.5." },
+            ]
+        };
+
+        // --- DOM Elements ---
+        const categorySelect = document.getElementById('category-select');
+        const sizeSelect = document.getElementById('size-select');
+        const startButton = document.getElementById('start-game');
+        const gameBoard = document.getElementById('game-board');
+        const turnIndicator = document.getElementById('turn-indicator');
+        const scoreXEl = document.getElementById('score-X');
+        const scoreOEl = document.getElementById('score-O');
+        // Input Nama (BARU)
+        const playerXNameInput = document.getElementById('player-x-name');
+        const playerONameInput = document.getElementById('player-o-name');
+        
+        // Modals
+        const questionModal = document.getElementById('question-modal');
+        const questionText = document.getElementById('question-text');
+        const questionPoints = document.getElementById('question-points');
+        const answerOptions = document.getElementById('answer-options');
+        
+        const resultModal = document.getElementById('result-modal');
+        const resultEmoji = document.getElementById('result-emoji');
+        const resultMessage = document.getElementById('result-message');
+        const resultExplanation = document.getElementById('result-explanation');
+        const continueButton = document.getElementById('continue-button');
+        
+        const gameOverModal = document.getElementById('game-over-modal');
+        const gameOverMessage = document.getElementById('game-over-message');
+        const restartButton = document.getElementById('restart-game');
+
+        // --- Sintesis Suara (Tone.js) ---
+        let correctSynth, wrongSynth;
+        
+        // Inisialisasi Tone.js setelah interaksi pengguna (di dalam startButton click)
+        async function initAudio() {
+            if (!correctSynth) {
+                await Tone.start();
+                correctSynth = new Tone.Synth({
+                    oscillator: { type: 'sine' },
+                    envelope: { attack: 0.01, decay: 0.1, sustain: 0.1, release: 0.2 }
+                }).toDestination();
+                
+                wrongSynth = new Tone.Synth({
+                    oscillator: { type: 'square' },
+                    envelope: { attack: 0.01, decay: 0.2, sustain: 0, release: 0.2 }
+                }).toDestination();
+                console.log("Audio Context Dimulai");
+            }
+        }
+
+        function playCorrectSound() {
+            if (correctSynth) {
+                correctSynth.triggerAttackRelease("C5", "8n", Tone.now());
+                correctSynth.triggerAttackRelease("G5", "8n", Tone.now() + 0.1);
+            }
+        }
+        
+        function playWrongSound() {
+            if (wrongSynth) {
+                wrongSynth.triggerAttackRelease("E3", "4n", Tone.now());
+            }
+        }
+
+        // --- Game State ---
+        let board = [];
+        let boardSize = 3;
+        let currentPlayer = 'X';
+        let currentCategory = 'penyangga';
+        let scores = { X: 0, O: 0 };
+        let gameActive = true;
+        let boardQuestions = []; // Menyimpan soal untuk setiap sel
+        let currentCellIndex = -1;
+        let currentQuestion = null;
+        // State Nama Pemain (BARU)
+        let playerNames = { X: 'Pemain X', O: 'Pemain O' };
+
+        // --- Event Listeners ---
+        startButton.addEventListener('click', startGame);
+        restartButton.addEventListener('click', startGame);
+
+        // --- Game Logic ---
+        function startGame() {
+            initAudio(); // Inisialisasi audio saat game dimulai
+            boardSize = parseInt(sizeSelect.value);
+            currentCategory = categorySelect.value;
+            board = Array(boardSize * boardSize).fill('');
+            boardQuestions = [];
+            currentPlayer = 'X';
+            scores = { X: 0, O: 0 };
+            gameActive = true;
+
+            // Baca nama pemain (BARU)
+            const nameX = playerXNameInput.value.trim();
+            const nameO = playerONameInput.value.trim();
+            playerNames.X = nameX === '' ? 'Pemain X' : nameX;
+            playerNames.O = nameO === '' ? 'Pemain O' : nameO;
+
+            updateTurnIndicator();
+            updateScores();
+            createBoard();
+
+            // Sembunyikan modal
+            hideModal(gameOverModal);
+            hideModal(resultModal);
+            hideModal(questionModal);
+        }
+
+        function createBoard() {
+            gameBoard.innerHTML = '';
+            gameBoard.style.gridTemplateColumns = `repeat(${boardSize}, minmax(0, 1fr))`;
+            
+            for (let i = 0; i < boardSize * boardSize; i++) {
+                const cell = document.createElement('div');
+                cell.classList.add('game-cell', 'rounded-md');
+                cell.dataset.index = i;
+                
+                // Ambil soal acak dan simpan
+                const question = getRandomQuestion(currentCategory);
+                boardQuestions[i] = question;
+
+                // Terapkan warna berdasarkan kesulitan
+                if (question.difficulty === 'easy') {
+                    cell.classList.add('bg-green-200', 'hover:bg-green-300'); // Easy
+                } else if (question.difficulty === 'medium') {
+                    cell.classList.add('bg-yellow-200', 'hover:bg-yellow-300'); // Medium
+                } else {
+                    cell.classList.add('bg-red-200', 'hover:bg-red-300'); // Hard
+                }
+                
+                cell.addEventListener('click', handleCellClick);
+                gameBoard.appendChild(cell);
+            }
+        }
+
+        function getRandomQuestion(category) {
+            const categoryQuestions = questions[category];
+            return categoryQuestions[Math.floor(Math.random() * categoryQuestions.length)];
+        }
+
+        function handleCellClick(e) {
+            if (!gameActive) return;
+
+            const index = parseInt(e.target.dataset.index);
+
+            // Cek apakah sel sudah diisi
+            if (board[index] !== '') {
+                return;
+            }
+
+            // Simpan sel yang diklik dan tampilkan soal
+            currentCellIndex = index;
+            currentQuestion = boardQuestions[index];
+            showQuestionModal(currentQuestion);
+        }
+
+        // Fungsi untuk mengacak array (Fisher-Yates shuffle)
+        function shuffle(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex != 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        function showQuestionModal(question) {
+            questionText.textContent = question.q;
+            questionPoints.textContent = question.points;
+            answerOptions.innerHTML = '';
+
+            // Acak opsi jawaban
+            const shuffledOptions = shuffle([...question.options]);
+
+            shuffledOptions.forEach(option => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.classList.add('w-full', 'text-left', 'p-3', 'rounded-md', 'border', 'border-gray-300', 'hover:bg-gray-100', 'transition', 'duration-200');
+                
+                button.addEventListener('click', () => handleAnswerSubmit(option));
+                answerOptions.appendChild(button);
+            });
+
+            showModal(questionModal);
+        }
+
+        function handleAnswerSubmit(selectedAnswer) {
+            hideModal(questionModal);
+            const isCorrect = selectedAnswer === currentQuestion.answer;
+
+            if (isCorrect) {
+                // Jawaban Benar
+                playCorrectSound();
+                showResult('✅', 'Benar!', 'green', currentQuestion.explanation, true);
+            } else {
+                // Jawaban Salah
+                playWrongSound();
+                showResult('❌', 'Salah!', 'red', currentQuestion.explanation, false);
+            }
+        }
+
+        function showResult(emoji, message, color, explanation, isCorrect) {
+            resultEmoji.textContent = emoji;
+            resultMessage.textContent = message;
+            resultMessage.className = `text-2xl font-bold text-${color}-600`;
+            resultExplanation.textContent = explanation; // Tampilkan penjelasan
+            
+            // Hapus event listener lama (jika ada) dan tambahkan yang baru
+            continueButton.onclick = () => handleContinue(isCorrect);
+            
+            showModal(resultModal);
+        }
+
+        // Fungsi baru untuk menangani logika setelah modal penjelasan ditutup
+        function handleContinue(isCorrect) {
+            hideModal(resultModal);
+
+            if (isCorrect) {
+                board[currentCellIndex] = currentPlayer;
+                const cell = gameBoard.children[currentCellIndex];
+                cell.textContent = currentPlayer;
+                cell.classList.add(currentPlayer === 'X' ? 'player-X' : 'player-O');
+                cell.style.pointerEvents = 'none'; // Nonaktifkan klik pada sel
+                
+                // Tambah skor
+                scores[currentPlayer] += currentQuestion.points;
+                updateScores();
+                
+                // Cek pemenang
+                if (checkWinner(currentPlayer)) {
+                    gameActive = false;
+                    // Tampilkan nama pemenang (BARU)
+                    const winnerName = playerNames[currentPlayer];
+                    setTimeout(() => showGameOver(`🎉 Pemenangnya adalah ${winnerName}!`), 500);
+                } else if (board.every(cell => cell !== '')) {
+                    // Cek seri
+                    gameActive = false;
+                    setTimeout(() => showGameOver('🤝 Permainan Seri!'), 500);
+                } else {
+                    switchPlayer();
+                }
+            } else {
+                // Jika salah, ganti giliran
+                switchPlayer();
+            }
+        }
+
+        function showGameOver(message) {
+            gameOverMessage.textContent = message;
+            showModal(gameOverModal);
+        }
+
+        function switchPlayer() {
+            currentPlayer = (currentPlayer === 'X') ? 'O' : 'X';
+            updateTurnIndicator();
+        }
+
+        function updateTurnIndicator() {
+            // Tampilkan nama pemain (BARU)
+            const currentPlayerName = playerNames[currentPlayer];
+            turnIndicator.textContent = `Giliran: ${currentPlayerName} (${currentPlayer})`;
+            turnIndicator.className = `text-xl font-semibold ${currentPlayer === 'X' ? 'player-X' : 'player-O'}`;
+        }
+        
+        function updateScores() {
+            scoreXEl.textContent = scores.X;
+            scoreOEl.textContent = scores.O;
+        }
+
+        function checkWinner(player) {
+            const n = boardSize;
+
+            // Cek Baris
+            for (let i = 0; i < n; i++) {
+                let rowWin = true;
+                for (let j = 0; j < n; j++) {
+                    if (board[i * n + j] !== player) {
+                        rowWin = false;
+                        break;
+                    }
+                }
+                if (rowWin) return true;
+            }
+
+            // Cek Kolom
+            for (let j = 0; j < n; j++) {
+                let colWin = true;
+                for (let i = 0; i < n; i++) {
+                    if (board[i * n + j] !== player) {
+                        colWin = false;
+                        break;
+                    }
+                }
+                if (colWin) return true;
+            }
+
+            // Cek Diagonal 1 (kiri atas ke kanan bawah)
+            let diag1Win = true;
+            for (let i = 0; i < n; i++) {
+                if (board[i * n + i] !== player) {
+                    diag1Win = false;
+                    break;
+                }
+            }
+            if (diag1Win) return true;
+
+            // Cek Diagonal 2 (kanan atas ke kiri bawah)
+            let diag2Win = true;
+            // PERBAIKAN: Baris ini sebelumnya rusak
+            for (let i = 0; i < n; i++) {
+                if (board[i * n + (n - 1 - i)] !== player) {
+                    diag2Win = false;
+                    break;
+                }
+            }
+            if (diag2Win) return true;
+
+            return false;
+        }
+
+        // --- Utilitas Modal ---
+        function showModal(modal) {
+            modal.classList.remove('hidden');
+            setTimeout(() => { // Trik untuk animasi
+                modal.children[0].classList.remove('scale-95', 'opacity-0');
+                modal.children[0].classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function hideModal(modal) {
+            modal.children[0].classList.add('scale-95', 'opacity-0');
+            modal.children[0].classList.remove('scale-100', 'opacity-100');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200); // Sesuaikan dengan durasi transisi
+        }
+
+        // Mulai permainan saat halaman dimuat
+        startGame();
+    </script>
+</body>
+</html>
